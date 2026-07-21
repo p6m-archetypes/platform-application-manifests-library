@@ -21,27 +21,27 @@ spec:
   resourceRequirements:
 {% if persistence == 'PostgreSQL' %}
     - resourceType: postgresql
-      name: db
+      resourceName: db
       parameters:
-        sqlName: "{{ prefix_name }}_{{ suffix_name }}"
+        dbName: "{{ prefix_name }}_{{ suffix_name }}"
 {% elseif persistence == 'MySQL' %}
     - resourceType: mysql
-      name: db
+      resourceName: db
       parameters:
-        sqlName: "{{ prefix_name }}_{{ suffix_name }}"
+        dbName: "{{ prefix_name }}_{{ suffix_name }}"
 {% endif %}
 {% if cache == 'Redis' %}
     - resourceType: redis
-      name: cache
+      resourceName: cache
 {% endif %}
 {% if messaging == 'Kafka' %}
     - resourceType: kafka
-      name: messaging
+      resourceName: messaging
       scope: Shared
       access: "{{ messaging_access }}"
 {% elseif messaging == 'Pulsar' %}
     - resourceType: pulsar-topic
-      name: messaging
+      resourceName: messaging
       scope: Shared
       access: "{{ messaging_access }}"
 {% endif %}
