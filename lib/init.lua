@@ -21,7 +21,8 @@
 --   archetect render .../platform-application-manifests-library <project-dir>
 --
 -- Context contract (keys prompt() fills if absent):
---   project-name      — kebab-case service name; derived from prefix-name + suffix-name if set
+--   project-name      — kebab-case service name (p6m-identity-library, or prompted here)
+--   database_name     — the platform-provisioned database; defaults to project-name
 --   org-solution-name — kebab-case org/solution slug (e.g. acme-payments); used in image path
 --   image_registry    — container image registry hostname (e.g. registry.example.com); no default
 --   protocol          — REST / gRPC / GraphQL
@@ -39,27 +40,27 @@ local M = {}
 function M.prompt(context, opts)
     opts = opts or {}
 
-    -- Derive project-name from prefix/suffix if not already set.
-    -- Parent archetypes using Cases.programming() set prefix-name and
-    -- suffix-name; this library only needs the combined kebab-case form.
+    -- Parent archetypes set project_name through p6m-identity-library; standalone renders prompt
+    -- for it. The prefix-name + suffix-name reconstruction that used to live here is gone with the
+    -- decomposition itself (S1) — there is one project name now, and it is asked for directly.
     if not context:get("project-name") then
-        local prefix = context:get("prefix-name")
-        local suffix = context:get("suffix-name")
-        if prefix and suffix and prefix ~= "" and suffix ~= "" then
-            context:set("project-name", prefix .. "-" .. suffix)
-        elseif prefix and prefix ~= "" then
-            context:set("project-name", prefix)
-        else
-            -- Standalone: prompt for project name and derive all case variants.
-            context:prompt_text("Project Name:", "project_name", {
-                cases = Cases.programming(),
-                placeholder = "billing-service",
-                help = "Kebab-case service name — matches the service's project directory.",
-            })
-        end
+        context:prompt_text("Project Name:", "project_name", {
+            cases = Cases.programming(),
+            placeholder = "billing-service",
+            help = "Kebab-case service name — matches the service's project directory.",
+        })
     end
 
-    -- Org/solution slug — used in image path; set by org-prompts-library in parent archetypes
+    -- The platform-provisioned database's name. Defaulted to the project so a service archetype
+    -- need not think about it; an OVERLAY overrides it (`{application}_db`) because it retrofits a
+    -- legacy app that may already carry a database of its own, and the two must not collide.
+    -- This used to ride `{{ entity_name }}_{{ suffix_name }}`, which is how an overlay smuggled a
+    -- "_db" suffix through an identity decomposition that meant nothing to it.
+    if not context:get("database_name") then
+        context:set("database_name", context:get("project_name"))
+    end
+
+    -- Org/solution slug — used in image path; set by the identity library in parent archetypes
     if not context:get("org-solution-name") then
         context:prompt_text("Org / Solution:", "org_solution_name", {
             cases       = Cases.programming(),

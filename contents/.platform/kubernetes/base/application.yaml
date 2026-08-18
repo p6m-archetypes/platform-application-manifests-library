@@ -23,12 +23,12 @@ spec:
     - resourceType: postgresql
       resourceName: db
       parameters:
-        dbName: "{{ prefix_name }}_{{ suffix_name }}"
+        dbName: "{{ database_name }}"
 {% elseif persistence == 'MySQL' %}
     - resourceType: mysql
       resourceName: db
       parameters:
-        dbName: "{{ prefix_name }}_{{ suffix_name }}"
+        dbName: "{{ database_name }}"
 {% endif %}
 {% if cache == 'Redis' %}
     - resourceType: redis
