@@ -34,6 +34,25 @@
 
 local M = {}
 
+--- The image registry, on its own so a parent can ask it EARLY.
+---
+--- It is a deployment fact that belongs beside the solution slug, but `prompt()` runs last (it
+--- needs the resource selections), so an archetype calling only `prompt()` ends up asking for the
+--- registry after Source Control — dead last in the derived interface a form is rendered from.
+--- Calling this up front puts it where it belongs; `prompt()` then finds it already answered and
+--- skips it. One definition either way: the library that consumes the key owns the prompt.
+---
+--- Idempotent, like every prompt in this library.
+function M.prompt_registry(context)
+    if not context:get("image_registry") then
+        context:prompt_text("Image Registry:", "image_registry", {
+            placeholder = "registry.example.com",
+            help        = "Container image registry hostname (e.g. ghcr.io, 123456789.dkr.ecr.us-east-1.amazonaws.com)",
+        })
+    end
+    return context
+end
+
 -- Fill any context keys needed for template rendering. Skips keys already
 -- present so parent archetypes can pre-populate the full context and this
 -- function becomes a no-op for all pre-set keys.
@@ -69,13 +88,7 @@ function M.prompt(context, opts)
         })
     end
 
-    -- Image registry — no default; company-specific
-    if not context:get("image_registry") then
-        context:prompt_text("Image Registry:", "image_registry", {
-            placeholder = "registry.example.com",
-            help        = "Container image registry hostname (e.g. ghcr.io, 123456789.dkr.ecr.us-east-1.amazonaws.com)",
-        })
-    end
+    M.prompt_registry(context)
 
     -- Protocol
     if not context:get("protocol") then
