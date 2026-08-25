@@ -1,0 +1,7 @@
+apiVersion: meta.p6m.dev/v1alpha1
+kind: PlatformApplication
+metadata:
+  name: {{ project-name }}
+  namespace: {{ project-name }}
+spec:
+  config: {}

@@ -1,0 +1,16 @@
+---
+description: "Platform Application Manifests — .platform/kubernetes/ CD directory for any service"
+summary: >
+  Generates the .platform/kubernetes/ directory tree (PlatformApplication CRD +
+  Kustomize base/dev/stg/prd overlays) for any service archetype. Language-agnostic.
+  Consumed as a library by service archetypes, or run standalone to retrofit an
+  existing project.
+authors: ["Jimmie Fulton <jimmie@ybor.ai>"]
+tags: ["library", "platform", "kubernetes", "manifests", "cd"]
+
+requires:
+  archetect: "3.0.0"
+
+templating:
+  trim_blocks: true
+  lstrip_blocks: true

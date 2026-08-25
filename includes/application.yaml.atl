@@ -1,0 +1,55 @@
+apiVersion: meta.p6m.dev/v1alpha1
+kind: PlatformApplication
+metadata:
+  name: {{ project-name }}
+  namespace: {{ project-name }}
+  labels:
+    p6m.dev/app: {{ project-name }}
+spec:
+  config:
+{% if protocol == 'gRPC' %}
+    GRPC_PORT: "{{ service_port }}"
+{% else %}
+    SERVER_PORT: "{{ service_port }}"
+{% endif %}
+    MANAGEMENT_PORT: "{{ management_port }}"
+    LOGGING_STRUCTURED: "true"
+    # Platform-injected at deploy time:
+    # OTEL_SERVICE_NAME: "{{ project-name }}"
+    # OTEL_EXPORTER_OTLP_ENDPOINT: "<cluster-collector>"
+{% if persistence ~= 'None' or cache ~= 'None' or messaging ~= 'None' %}
+  resourceRequirements:
+{% if persistence == 'PostgreSQL' %}
+    - resourceType: postgresql
+      name: db
+{% elseif persistence == 'MySQL' %}
+    - resourceType: mysql
+      name: db
+{% endif %}
+{% if cache == 'Redis' %}
+    - resourceType: redis
+      name: cache
+{% endif %}
+{% if messaging == 'Kafka' %}
+    - resourceType: kafka
+      name: messaging
+      scope: Shared
+      access: "{{ messaging_access }}"
+{% elseif messaging == 'Pulsar' %}
+    - resourceType: pulsar-topic
+      name: messaging
+      scope: Shared
+      access: "{{ messaging_access }}"
+{% endif %}
+{% endif %}
+  deployment:
+    image: {{ image_registry }}/{{ org-solution-name }}/{{ project-name }}:latest
+    readOnlyRootFilesystem: false
+    ports:
+      - protocol: {{ port_protocol }}
+        port: {{ service_port }}
+      - protocol: http
+        port: {{ management_port }}
+    readinessProbe:
+      port: {{ management_port }}
+      path: /health/readiness

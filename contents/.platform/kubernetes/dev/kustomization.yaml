@@ -1,0 +1,24 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+  - namespace.yaml
+
+# Solution-scoped namespace. PAO derives the solution (org-solution-name) and
+# environment (dev) from this namespace name via the {solution}-{app}-{env}
+# convention, which is what lets Shared resources (e.g. a Pulsar topic) be
+# shared across apps in the same solution + environment.
+namespace: {{ org-solution-name }}-{{ project-name }}-dev
+
+patches:
+  - path: application_patch.yaml
+
+# Override the image to a local tag so Tilt can inject the image it built.
+# `application_customizations.yaml` (in base) tells kustomize to look for
+# this image in spec/deployment/image of PlatformApplication resources.
+images:
+  - name: {{ image_registry }}/{{ org-solution-name }}/{{ project-name }}
+    newName: {{ project-name }}
+    newTag: local
