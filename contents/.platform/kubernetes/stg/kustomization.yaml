@@ -4,10 +4,6 @@ kind: Kustomization
 
 resources:
   - ../base
-  - namespace.yaml
-
-# Solution-scoped namespace (see dev overlay for rationale).
-namespace: {{ org-solution-name }}-{{ project-name }}-stg
 
 patches:
   - path: application_patch.yaml

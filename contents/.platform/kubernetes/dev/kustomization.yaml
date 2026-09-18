@@ -4,13 +4,6 @@ kind: Kustomization
 
 resources:
   - ../base
-  - namespace.yaml
-
-# Solution-scoped namespace. PAO derives the solution (org-solution-name) and
-# environment (dev) from this namespace name via the {solution}-{app}-{env}
-# convention, which is what lets Shared resources (e.g. a Pulsar topic) be
-# shared across apps in the same solution + environment.
-namespace: {{ org-solution-name }}-{{ project-name }}-dev
 
 patches:
   - path: application_patch.yaml
