@@ -12,6 +12,6 @@ patches:
 # `application_customizations.yaml` (in base) tells kustomize to look for
 # this image in spec/deployment/image of PlatformApplication resources.
 images:
-  - name: {{ image_registry }}/{{ org-solution-name }}/{{ project-name }}
+  - name: {{ image_registry }}/{{ organization-name }}/{{ project-name }}
     newName: {{ project-name }}
     newTag: local

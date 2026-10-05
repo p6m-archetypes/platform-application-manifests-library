@@ -47,7 +47,7 @@ spec:
 {% endif %}
 {% endif %}
   deployment:
-    image: {{ image_registry }}/{{ org-solution-name }}/{{ project-name }}:latest
+    image: {{ image_registry }}/{{ organization-name }}/{{ project-name }}:latest
     readOnlyRootFilesystem: false
     ports:
       - protocol: {{ port_protocol }}

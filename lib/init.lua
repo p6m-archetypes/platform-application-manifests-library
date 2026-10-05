@@ -23,7 +23,7 @@
 -- Context contract (keys prompt() fills if absent):
 --   project-name      — kebab-case service name (p6m-identity-library, or prompted here)
 --   database_name     — the platform-provisioned database; defaults to project-name
---   org-solution-name — kebab-case org/solution slug (e.g. acme-payments); used in image path
+--   organization-name — the GitHub organization (e.g. acme-payments); used in image path
 --   image_registry    — container image registry hostname (e.g. registry.example.com); no default
 --   protocol          — REST / gRPC / GraphQL
 --   service_port      — integer, default 8080 (REST/GraphQL) or 50051 (gRPC)
@@ -36,7 +36,7 @@ local M = {}
 
 --- The image registry, on its own so a parent can ask it EARLY.
 ---
---- It is a deployment fact that belongs beside the solution slug, but `prompt()` runs last (it
+--- It is a deployment fact that belongs beside the organization, but `prompt()` runs last (it
 --- needs the resource selections), so an archetype calling only `prompt()` ends up asking for the
 --- registry after Source Control — dead last in the derived interface a form is rendered from.
 --- Calling this up front puts it where it belongs; `prompt()` then finds it already answered and
@@ -79,12 +79,19 @@ function M.prompt(context, opts)
         context:set("database_name", context:get("project_name"))
     end
 
-    -- Org/solution slug — used in image path; set by the identity library in parent archetypes
-    if not context:get("org-solution-name") then
-        context:prompt_text("Org / Solution:", "org_solution_name", {
+    -- The GitHub organization — used in image path; set by the identity library in parent
+    -- archetypes. A parent pinned to an identity tag from before YP6M-3798 sets only the
+    -- transitional `org-solution-name`, and an older standalone answer file says
+    -- `org_solution_name`; honor either until that alias is retired.
+    local legacy = context:get("org-solution-name") or context:get("org_solution_name")
+    if not context:get("organization-name") and legacy then
+        context:set("organization_name", legacy, { cases = Cases.programming() })
+    end
+    if not context:get("organization-name") then
+        context:prompt_text("Organization:", "organization_name", {
             cases       = Cases.programming(),
-            placeholder = "my-org",
-            help        = "Kebab-case org and solution slug (e.g. acme-payments)",
+            placeholder = "ybor-playground",
+            help        = "Your GitHub organization.",
         })
     end
 
